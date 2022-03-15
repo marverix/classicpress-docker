@@ -1,0 +1,41 @@
+version: "3.9"
+
+networks: 
+  classicpress_network:
+    driver: bridge
+
+volumes:
+  classicpress_data:
+  mariadb_data:
+
+services:
+  classicpress:
+    build: classicpress
+    volumes:
+    - classicpress_data:/data
+    networks:
+    - classicpress_network
+    ports:
+    - 8000:80
+    depends_on:
+    - mariadb
+    environment:
+    - "CP_DB_NAME=${CP_DB_NAME}"
+    - "CP_DB_USER=${CP_DB_USER}"
+    - "CP_DB_PASSWORD=${CP_DB_PASSWORD}"
+    - "CP_DB_HOST=${CP_DB_HOST}"
+    restarts: unless-stopped
+
+  mariadb:
+    image: mariadb:10.7.3
+    container_name: "${CP_DB_HOST}"
+    volumes:
+    - mariadb_data:/var/lib/mysql/data
+    networks:
+    - classicpress_network
+    environment:
+    - "MARIADB_DATABASE=${CP_DB_NAME}"
+    - "MARIADB_USER=${CP_DB_USER}"
+    - "MARIADB_PASSWORD=${CP_DB_PASSWORD}"
+    - "MARIADB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}"
+    restarts: unless-stopped
