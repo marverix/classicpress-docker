@@ -6,6 +6,13 @@ Quote from [www.classicpress.net](https://www.classicpress.net/):
 
 This repo contains only a Docker files required to build a Docker image containing ClassicPress.
 
+The image is based on [`php:7.4-apache-bullseye`](https://hub.docker.com/_/php?tab=tags&name=7.4-apache-bullseye) and:
+
+* Has enabled all required and recommended php extensions for WordPress
+* Has installed [`apache2-mod-security2`](https://github.com/SpiderLabs/ModSecurity) with [enabled OWASP CSR](https://owasp.org/www-project-modsecurity-core-rule-set/)
+
+Even so, it's highly recommended to not to expose a container directly to the outside world. Consider using a secure nginx docer container, like [swag](https://github.com/linuxserver/docker-swag), which would work as a proxy and a router on your server.
+
 ## Usage
 
 Good Docker practice is that one service/server == one docker container, this is why you will still need to run separate container
@@ -13,7 +20,12 @@ with a database (MySQL/MariaDB).
 
 ### With Docker Compose
 
-TODO
+You will need to create own `docker-compose.yaml` file.
+As a start point, you can use `docker-compose.example.yaml` and `myblog-env-example`. Then simply run:
+
+```sh
+docker-compose -f docker-compose.example.yaml --env-file=myblog-env-example up
+```
 
 ### Manually
 
@@ -31,8 +43,8 @@ TODO
         --detach \
         --name mariadb \
         --volume mariadb_data:/var/lib/mysql/data \
-        --env MARIADB_DATABASE=yourblogname_db \
-        --env MARIADB_USER=yourblogname_user \
+        --env MARIADB_DATABASE=myblog_db \
+        --env MARIADB_USER=myblog_user \
         --env MARIADB_PASSWORD=my_secret_passowrd \
         --env MARIADB_ROOT_PASSWORD=my_turbo_secret_password \
         --restart=unless-stopped \
@@ -42,7 +54,7 @@ TODO
 1. Create a volume where will be stored config and data.
 
     ```sh
-    docker volume create yourblogname_data
+    docker volume create myblog_data
     ```
 
 1. Run
@@ -51,10 +63,10 @@ TODO
     docker run \
         --detach \
         --expose 80:80 \
-        --name yourblogname \
-        --volume yourblogname_data:/data \
-        --env CP_DB_NAME=yourblogname_db \
-        --env CP_DB_USER=yourblogname_user \
+        --name myblog \
+        --volume myblog_data:/data \
+        --env CP_DB_NAME=myblog_db \
+        --env CP_DB_USER=myblog_user \
         --env CP_DB_PASSWORD=my_secret_passowrd \
         --env CP_DB_HOST=mariadb \
         --restart=unless-stopped \
@@ -71,7 +83,7 @@ Example:
 ```conf
 CP_DB_HOST=mariadb
 CP_DB_NAME=classicpress
-CP_DB_USER=yourblogname_user
+CP_DB_USER=myblog_user
 CP_DB_PASSWORD=my_secret_password
 DB_ROOT_PASSWORD=turbo_secret_password
 

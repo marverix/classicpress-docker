@@ -1,0 +1,42 @@
+version: "3.9"
+
+networks: 
+  myblog_network:
+    driver: bridge
+
+volumes:
+  myblog_data:
+  mariadb_data:
+
+services:
+  classicpress:
+    image: marverix/classicpress:latest
+    container_name: "${MYBLOG}"
+    volumes:
+    - myblog_data:/data
+    networks:
+    - myblog_network
+    ports:
+    - 8000:80
+    depends_on:
+    - mariadb
+    environment:
+    - "CP_DB_NAME=${MYBLOG}_db"
+    - "CP_DB_USER=${MYBLOG}_user"
+    - "CP_DB_PASSWORD=${MYBLOG_DB_PASSWORD}"
+    - "CP_DB_HOST=mariadb"
+    restart: unless-stopped
+
+  mariadb:
+    image: mariadb:10.7.3
+    container_name: mariadb
+    volumes:
+    - mariadb_data:/var/lib/mysql/data
+    networks:
+    - myblog_network
+    environment:
+    - "MARIADB_DATABASE=${MYBLOG}_db"
+    - "MARIADB_USER=${MYBLOG}_user"
+    - "MARIADB_PASSWORD=${MYBLOG_DB_PASSWORD}"
+    - "MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}"
+    restart: unless-stopped
