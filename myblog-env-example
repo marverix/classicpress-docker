@@ -1,0 +1,3 @@
+MYBLOG=myblog
+MYBLOG_DB_PASSWORD=my-blog-secret-password
+MARIADB_ROOT_PASSWORD=14-characters-or-more-read-owasp-recommendations

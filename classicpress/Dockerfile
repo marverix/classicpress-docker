@@ -59,12 +59,18 @@ RUN touch wp-config.php \
 # Copy wp-config.template.php
 COPY wp-config.template.php ${www_dir}/wp-config.template.php
 
+# Copy php.ini
+COPY php.ini "${PHP_INI_DIR}/php.ini"
+
 # Install missing php extensions
 RUN EXTRA_CFLAGS="-I/usr/src/php" docker-php-ext-install \
     exif gd mysqli zip
 
 # Enable apache mod-rewrite
 RUN a2enmod rewrite
+
+# Enable apache mod-headers
+RUN a2enmod headers
 
 # Enable mod-security2
 RUN a2enmod security2
@@ -79,8 +85,11 @@ RUN rm -rf ./* \
  && mv crs-setup.conf.example crs-setup.conf \
  && mv ./rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf.example ./rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf
 
-# Copy new apache conf
+# Copy default site conf
 COPY 000-default.conf /etc/apache2/sites-available/000-default.conf
+
+# Copy security conf
+COPY security.conf /etc/apache2/conf-available/security.conf
 
 # Copy htaccess
 COPY htaccess /data/.htaccess

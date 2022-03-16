@@ -10,7 +10,7 @@ on:
 env:
   REGISTRY: registry.hub.docker.com
   IMAGE_NAME: marverix/classicpress
-  BUILD_CONTEXT: classicpress
+  BUILD_CONTEXT: ./classicpress
 
 
 jobs:
@@ -43,7 +43,7 @@ jobs:
         uses: docker/login-action@v1.14.1
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
+          username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_PTA }}
 
       # Extract metadata (tags, labels) for Docker
@@ -77,3 +77,13 @@ jobs:
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
         run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build-and-push.outputs.digest }}
+
+      - name: Update Docker Hub description
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: peter-evans/dockerhub-description@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_PTA }}
+          repository: ${{ env.IMAGE_NAME }}
+          short-description: ClassicPress Docker Image
+          readme-filepath: ./DOCKER_HUB_README.md
