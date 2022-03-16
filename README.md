@@ -4,8 +4,6 @@ Quote from [www.classicpress.net](https://www.classicpress.net/):
 
 > ClassicPress is a community-led open source content management system and a fork of WordPress that preserves the TinyMCE classic editor as the default option.
 
-This repo contains only a Docker files required to build a Docker image containing ClassicPress.
-
 The image is based on [`php:7.4-apache-bullseye`](https://hub.docker.com/_/php?tab=tags&name=7.4-apache-bullseye) and:
 
 * Has enabled all required and recommended php extensions for WordPress
@@ -21,7 +19,7 @@ with a database (MySQL/MariaDB).
 ### With Docker Compose
 
 You will need to create own `docker-compose.yaml` file.
-As a start point, you can use `docker-compose.example.yaml` and `myblog-env-example`. Then simply run:
+As a start point, you can use [`docker-compose.example.yaml`](https://github.com/marverix/classicpress-docker/blob/master/docker-compose.example.yaml) and [`myblog-env-example`](https://github.com/marverix/classicpress-docker/blob/master/myblog-env-example). Then simply run:
 
 ```sh
 docker-compose -f docker-compose.example.yaml --env-file=myblog-env-example up
@@ -73,26 +71,6 @@ docker-compose -f docker-compose.example.yaml --env-file=myblog-env-example up
         marverix/classicpress:latest
     ```
     
-## Build Locally
+## Development
 
-The simplest way to build this image locally, it's to use Docker Compose.
-To do so, you will need to create a `.env` file in cloned repo (it's git-ignored).
-
-Example:
-
-```conf
-CP_DB_HOST=mariadb
-CP_DB_NAME=classicpress
-CP_DB_USER=myblog_user
-CP_DB_PASSWORD=my_secret_password
-DB_ROOT_PASSWORD=turbo_secret_password
-
-```
-
-Now, you simply run:
-
-```sh
-docker-compose -f docker-compose.dev.yaml up
-```
-
-The container will be accessible via http://localhost:8000 
+How-to is described in [a separate document](https://github.com/marverix/classicpress-docker/blob/master/DEVELOPMENT.md).

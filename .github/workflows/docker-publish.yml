@@ -86,4 +86,3 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           repository: ${{ env.IMAGE_NAME }}
           short-description: ClassicPress Docker Image
-          readme-filepath: ./DOCKER_HUB_README.md
