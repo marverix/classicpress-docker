@@ -40,24 +40,16 @@ RUN tar -xf classicpress.tar.gz -C ${www_dir} --strip-components=1
 RUN mkdir /data
 WORKDIR /data
 
-# Move themes to /data
-RUN mv ${www_dir}/wp-content/themes ./themes \
- && ln -s /data/themes ${www_dir}/wp-content/themes
-
-# Move plugins to /data
-RUN mv ${www_dir}/wp-content/plugins ./plugins \
- && ln -s /data/plugins ${www_dir}/wp-content/plugins
-
-# Prepare uploads dir
-RUN mkdir uploads \
- && ln -s /data/uploads ${www_dir}/wp-content/uploads
+# Move wp-content to /data
+RUN mv ${www_dir}/wp-content ./wp-content \
+ && ln -s /data/wp-content ${www_dir}/wp-content
 
 # Init wp-config.php
 RUN touch wp-config.php \
  && ln -s /data/wp-config.php ${www_dir}/wp-config.php
 
 # Copy wp-config.template.php
-COPY wp-config.template.php ${www_dir}/wp-config.template.php
+COPY wp-config.template.php ${www_dir}/../wp-config.template.php
 
 # Copy php.ini
 COPY php.ini "${PHP_INI_DIR}/php.ini"

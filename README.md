@@ -9,7 +9,7 @@ The image is based on [`php:7.4-apache-bullseye`](https://hub.docker.com/_/php?t
 * Has enabled all required and recommended php extensions for WordPress
 * Has installed [`apache2-mod-security2`](https://github.com/SpiderLabs/ModSecurity) with [enabled OWASP CSR](https://owasp.org/www-project-modsecurity-core-rule-set/)
 
-Even so, it's highly recommended to not to expose a container directly to the outside world. Consider using a secure nginx docer container, like [swag](https://github.com/linuxserver/docker-swag), which would work as a proxy and a router on your server.
+Even so, it's highly recommended to not to expose a container directly to the outside world. Consider using a reverse proxy like [traefik](https://doc.traefik.io/traefik/) or [Nginx Proxy Manager](https://nginxproxymanager.com/).
 
 ## Usage
 
