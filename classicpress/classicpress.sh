@@ -17,6 +17,14 @@ if [ ! -w "${WP_CONFIG}" ]; then
 fi
 
 
+function load_secrets() {
+  for secretFileName in $(env | cut -f1 -d= | grep "_FILE$"); do
+    secretName="${secretFileName%_FILE}"
+    echo "  Setting ${secretName}"
+    export "${secretName}"="$(cat ${!secretFileName})"
+  done
+}
+
 function demand_env() {
   if [[ -z "${!1}" ]]; then
     echo "$1 is not set"
@@ -43,6 +51,9 @@ function store_env() {
 if [ -s "${WP_CONFIG}" ]; then
   echo "${WP_CONFIG} seems to be already configured. Not recreating."
 else
+  echo "Checking secrets ..."
+  load_secrets
+
   echo "Checking environment ..."
   demand_env "CP_DB_NAME"
   demand_env "CP_DB_USER"
