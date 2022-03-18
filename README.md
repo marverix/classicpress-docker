@@ -4,12 +4,14 @@ Quote from [www.classicpress.net](https://www.classicpress.net/):
 
 > ClassicPress is a community-led open source content management system and a fork of WordPress that preserves the TinyMCE classic editor as the default option.
 
-The image is based on [`php:7.4-apache-bullseye`](https://hub.docker.com/_/php?tab=tags&name=7.4-apache-bullseye) and:
+## Basic Information
 
+* The image is based on [`php:7.4-apache-bullseye`](https://hub.docker.com/_/php?tab=tags&name=7.4-apache-bullseye)
 * Has enabled all required and recommended php extensions for WordPress
 * Has installed [`apache2-mod-security2`](https://github.com/SpiderLabs/ModSecurity) with [enabled OWASP CSR](https://owasp.org/www-project-modsecurity-core-rule-set/)
+* Support for Docker Secrets via env variables with `_FILE` suffix
 
-Even so, it's highly recommended to not to expose a container directly to the outside world. Consider using a reverse proxy like [traefik](https://doc.traefik.io/traefik/) or [Nginx Proxy Manager](https://nginxproxymanager.com/).
+Note: Even with basic hardening done, it's highly recommended to not to expose a container directly to the outside world. Consider using a reverse proxy like [traefik](https://doc.traefik.io/traefik/) or [Nginx Proxy Manager](https://nginxproxymanager.com/).
 
 ## Usage
 

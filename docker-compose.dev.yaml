@@ -8,6 +8,12 @@ volumes:
   classicpress_data:
   mariadb_data:
 
+secrets:
+  CP_DB_PASSWORD:
+    file: ./CP_DB_PASSWORD.secret
+  DB_ROOT_PASSWORD:
+    file: ./DB_ROOT_PASSWORD.secret
+
 services:
   classicpress:
     build: classicpress
@@ -22,8 +28,10 @@ services:
     environment:
     - "CP_DB_NAME=${CP_DB_NAME}"
     - "CP_DB_USER=${CP_DB_USER}"
-    - "CP_DB_PASSWORD=${CP_DB_PASSWORD}"
+    - "CP_DB_PASSWORD_FILE=/run/secrets/CP_DB_PASSWORD"
     - "CP_DB_HOST=${CP_DB_HOST}"
+    secrets:
+    - CP_DB_PASSWORD
     restart: unless-stopped
 
   mariadb:
@@ -36,6 +44,11 @@ services:
     environment:
     - "MARIADB_DATABASE=${CP_DB_NAME}"
     - "MARIADB_USER=${CP_DB_USER}"
-    - "MARIADB_PASSWORD=${CP_DB_PASSWORD}"
-    - "MARIADB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}"
+    - "MARIADB_PASSWORD_FILE=/run/secrets/MARIADB_PASSWORD"
+    - "MARIADB_ROOT_PASSWORD_FILE=/run/secrets/MARIADB_ROOT_PASSWORD"
+    secrets:
+    - source: CP_DB_PASSWORD
+      target: MARIADB_PASSWORD
+    - source: DB_ROOT_PASSWORD
+      target: MARIADB_ROOT_PASSWORD
     restart: unless-stopped

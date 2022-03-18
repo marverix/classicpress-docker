@@ -4,6 +4,7 @@ FROM php:7.4-apache-bullseye
 ARG version=1.3.1
 ARG corerules_version=3.3.2
 ARG www_dir=/var/www/html
+# ARG www_user=www-data
 ENV WWW_DIR=${www_dir}
 
 # Install packages
@@ -100,6 +101,12 @@ WORKDIR ${www_dir}
 # Expose port 80
 EXPOSE 80
 
-# Set startup command
+# Copy startup file
 COPY classicpress.sh /opt/classicpress.sh
+
+# Change user
+# RUN chown -R ${www_user}:${www_user} . /data
+# USER ${www_user}
+
+# Set startup command
 CMD [ "/opt/classicpress.sh" ]

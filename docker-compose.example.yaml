@@ -8,6 +8,12 @@ volumes:
   myblog_data:
   mariadb_data:
 
+secrets:
+  MYBLOG_DB_PASSWORD:
+    file: ./MYBLOG_DB_PASSWORD.secret
+  MARIADB_ROOT_PASSWORD:
+    file: ./MARIADB_ROOT_PASSWORD.secret
+
 services:
   classicpress:
     image: marverix/classicpress:latest
@@ -23,8 +29,10 @@ services:
     environment:
     - "CP_DB_NAME=${MYBLOG}_db"
     - "CP_DB_USER=${MYBLOG}_user"
-    - "CP_DB_PASSWORD=${MYBLOG_DB_PASSWORD}"
+    - "CP_DB_PASSWORD_FILE=/run/secrets/MYBLOG_DB_PASSWORD"
     - "CP_DB_HOST=mariadb"
+    secrets:
+    - MYBLOG_DB_PASSWORD
     restart: unless-stopped
 
   mariadb:
@@ -37,6 +45,8 @@ services:
     environment:
     - "MARIADB_DATABASE=${MYBLOG}_db"
     - "MARIADB_USER=${MYBLOG}_user"
-    - "MARIADB_PASSWORD=${MYBLOG_DB_PASSWORD}"
-    - "MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}"
+    - "MARIADB_PASSWORD_FILE=/run/secrets/MYBLOG_DB_PASSWORD"
+    - "MARIADB_ROOT_PASSWORD_FILE=/run/secrets/MARIADB_ROOT_PASSWORD"
+    secrets:
+    - MARIADB_ROOT_PASSWORD
     restart: unless-stopped
