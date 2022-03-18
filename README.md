@@ -4,6 +4,16 @@ Quote from [www.classicpress.net](https://www.classicpress.net/):
 
 > ClassicPress is a community-led open source content management system and a fork of WordPress that preserves the TinyMCE classic editor as the default option.
 
+## Tags
+
+### Current
+
+* `1.3`, `1.3.1`, `cp1.3`, `cp1.3.1`, `cp1.3.1-rev1`, `latest`
+### Convention
+
+Tagging convention is: `cpXXX-revYYY`
+
+`XXX` is ClassicPress version. `YYY` is Docker Image revision number.
 ## Basic Information
 
 * The image is based on [`php:7.4-apache-bullseye`](https://hub.docker.com/_/php?tab=tags&name=7.4-apache-bullseye)
