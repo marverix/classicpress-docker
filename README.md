@@ -83,8 +83,6 @@ docker-compose -f docker-compose.example.yaml --env-file=myblog-env-example up
         --detach \
         --name mariadb \
         --volume mariadb_data:/var/lib/mysql/data \
-        --env APACHE_RUN_USER_ID=$UID \
-        --env APACHE_RUN_GROUP_ID=$GID \
         --env MARIADB_DATABASE=myblog_db \
         --env MARIADB_USER=myblog_user \
         --env MARIADB_PASSWORD=my_secret_passowrd \
@@ -107,6 +105,8 @@ docker-compose -f docker-compose.example.yaml --env-file=myblog-env-example up
         --expose 80:80 \
         --name myblog \
         --volume myblog_data:/data \
+        --env APACHE_RUN_USER_ID=$UID \
+        --env APACHE_RUN_GROUP_ID=$GID \
         --env CP_DB_NAME=myblog_db \
         --env CP_DB_USER=myblog_user \
         --env CP_DB_PASSWORD=my_secret_passowrd \
