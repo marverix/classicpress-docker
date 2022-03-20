@@ -1,21 +1,7 @@
 #!/usr/bin/env bash
 
 # ClassicPress Startup Script
-
-WP_CONFIG=/data/wp-config.php
 TMP_WP_CONFIG=/tmp/wp-config.php
-
-
-if [ ! -f "${WP_CONFIG}" ]; then
-    echo "Error: File ${WP_CONFIG} not found"
-    exit 1
-fi
-
-if [ ! -w "${WP_CONFIG}" ]; then
-    echo "Error: File ${WP_CONFIG} found, but not writable. Have you mounted the /data as a volume?"
-    exit 1
-fi
-
 
 function load_secrets() {
   for secretFileName in $(env | cut -f1 -d= | grep "_FILE$"); do
@@ -47,6 +33,17 @@ function store_env() {
   sed -i "s/$1/${!1}/g" "${TMP_WP_CONFIG}"
 }
 
+
+# Checking wp-config.php
+if [ ! -f "${WP_CONFIG}" ]; then
+    echo "Notice: File ${WP_CONFIG} not found - touching"
+    touch "${WP_CONFIG}"
+fi
+
+if [ ! -w "${WP_CONFIG}" ]; then
+    echo "Error: File ${WP_CONFIG} found, but not writable. Have you mounted the /data as a volume?"
+    exit 1
+fi
 
 if [ -s "${WP_CONFIG}" ]; then
   echo "${WP_CONFIG} seems to be already configured. Not recreating."
@@ -93,6 +90,23 @@ else
   mv "${TMP_WP_CONFIG}" "${WP_CONFIG}"
 fi
 
+
+# Checking wp-content
+if [ -d "${WP_CONTENT}" ]; then
+  echo "${WP_CONTENT} found - ok"
+else
+  echo "Notice: ${WP_CONTENT} does not exist - restoring from the backup"
+  cp -r "${BACKUP_WP_CONTENT}" "${WP_CONTENT}"
+fi
+
+
+# Chanigin ownership
+echo "Changing ownership..."
+sed -Ei "s/$APACHE_RUN_USER:x:[0-9]+:[0-9]+/$APACHE_RUN_USER:x:$APACHE_RUN_USER_ID:$APACHE_RUN_GROUP_ID/g" /etc/passwd
+chown -R ${APACHE_RUN_USER}:${APACHE_RUN_GROUP} ${WWW_DIR} ${DATA_DIR}
+
+
+# Starting apache
 echo "Starting Apache in foreground ..."
 # https://github.com/docker-library/php/blob/master/7.4/bullseye/apache/apache2-foreground
 apache2-foreground

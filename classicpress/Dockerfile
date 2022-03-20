@@ -4,8 +4,15 @@ FROM php:7.4-apache-bullseye
 ARG version=1.3.1
 ARG corerules_version=3.3.2
 ARG www_dir=/var/www/html
-# ARG www_user=www-data
+
 ENV WWW_DIR=${www_dir}
+ENV DATA_DIR=/data
+ENV WP_CONFIG=${DATA_DIR}/wp-config.php
+ENV WP_CONTENT=${DATA_DIR}/wp-content
+ENV BACKUP_WP_CONTENT="${WWW_DIR}/../wp-content-backup"
+
+ENV APACHE_RUN_USER=apache
+ENV APACHE_RUN_GROUP=www-data
 
 # Install packages
 RUN apt-get update \
@@ -38,16 +45,17 @@ RUN rm -rf ${www_dir}/*
 RUN tar -xf classicpress.tar.gz -C ${www_dir} --strip-components=1
 
 # Create /data
-RUN mkdir /data
-WORKDIR /data
+RUN mkdir ${DATA_DIR}
+WORKDIR ${DATA_DIR}
 
 # Move wp-content to /data
-RUN mv ${www_dir}/wp-content ./wp-content \
- && ln -s /data/wp-content ${www_dir}/wp-content
+RUN mv ${www_dir}/wp-content ${WP_CONTENT} \
+ && ln -s ${WP_CONTENT} ${www_dir}/wp-content \
+ && cp -r ${WP_CONTENT} ${BACKUP_WP_CONTENT}
 
 # Init wp-config.php
-RUN touch wp-config.php \
- && ln -s /data/wp-config.php ${www_dir}/wp-config.php
+RUN touch ${WP_CONFIG} \
+ && ln -s ${WP_CONFIG} ${www_dir}/wp-config.php
 
 # Copy wp-config.template.php
 COPY wp-config.template.php ${www_dir}/../wp-config.template.php
@@ -104,9 +112,11 @@ EXPOSE 80
 # Copy startup file
 COPY classicpress.sh /opt/classicpress.sh
 
-# Change user
-# RUN chown -R ${www_user}:${www_user} . /data
-# USER ${www_user}
+# Create user
+RUN useradd -rMUG daemon,www-data apache
+
+# It's important to NOT change user with USER. We want to have root permissions
+# in startup script, so we can dynamcally change UID/GID and ownership.
 
 # Set startup command
 CMD [ "/opt/classicpress.sh" ]
