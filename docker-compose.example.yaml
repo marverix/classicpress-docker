@@ -27,6 +27,8 @@ services:
     depends_on:
     - mariadb
     environment:
+    - "APACHE_RUN_USER_ID=${UID}"
+    - "APACHE_RUN_GROUP_ID=${GID}"
     - "CP_DB_NAME=${MYBLOG}_db"
     - "CP_DB_USER=${MYBLOG}_user"
     - "CP_DB_PASSWORD_FILE=/run/secrets/MYBLOG_DB_PASSWORD"
