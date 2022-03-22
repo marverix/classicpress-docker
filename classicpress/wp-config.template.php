@@ -19,6 +19,10 @@ $table_prefix  = 'CP_DB_TABLE_PREFIX';
 
 define('WP_DEBUG', false);
 
+if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) {
+	$_SERVER['HTTPS'] = 'on';
+}
+
 if ( !defined('ABSPATH') )
 	define('ABSPATH', dirname(__FILE__) . '/');
 
