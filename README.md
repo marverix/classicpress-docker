@@ -82,7 +82,7 @@ docker-compose -f docker-compose.example.yaml --env-file=myblog-env-example up
     docker run \
         --detach \
         --name mariadb \
-        --volume mariadb_data:/var/lib/mysql/data \
+        --volume mariadb_data:/var/lib/mysql \
         --env MARIADB_DATABASE=myblog_db \
         --env MARIADB_USER=myblog_user \
         --env MARIADB_PASSWORD=my_secret_passowrd \

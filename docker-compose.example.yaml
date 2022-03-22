@@ -41,7 +41,7 @@ services:
     image: mariadb:10.7.3
     container_name: mariadb
     volumes:
-    - mariadb_data:/var/lib/mysql/data
+    - mariadb_data:/var/lib/mysql
     networks:
     - myblog_network
     environment:
