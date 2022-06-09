@@ -8,6 +8,7 @@ Quote from [www.classicpress.net](https://www.classicpress.net/):
 
 ### Current
 
+* `1.4`, `1.4.1`, `cp1.4`, `cp1.4.1`, `cp1.4.1-rev1`, `latest`
 * `1.3`, `1.3.1`, `cp1.3`, `cp1.3.1`, `cp1.3.1-rev1`, `latest`
 ### Convention
 
