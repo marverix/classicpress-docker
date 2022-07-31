@@ -59,3 +59,4 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         tag_name: "cp${{ needs.check_release.outputs.root_repo_version }}-rev1"
+        token: "${{ secrets.WORKFLOW_PTA }}"
