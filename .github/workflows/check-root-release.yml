@@ -3,7 +3,7 @@ name: Check root package release
 on:
   workflow_dispatch:
   schedule:
-  - cron: '*/5 * * * *'  # every day at midnight
+  - cron: '0 0 * * *'  # every day at midnight
 
 jobs:
   check_release:
