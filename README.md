@@ -5,11 +5,6 @@ Quote from [www.classicpress.net](https://www.classicpress.net/):
 > ClassicPress is a community-led open source content management system and a fork of WordPress that preserves the TinyMCE classic editor as the default option.
 
 ## Tags
-
-### Current
-
-* `1.4`, `1.4.1`, `cp1.4`, `cp1.4.1`, `cp1.4.1-rev1`, `latest`
-* `1.3`, `1.3.1`, `cp1.3`, `cp1.3.1`, `cp1.3.1-rev1`, `latest`
 ### Convention
 
 Tagging convention is: `cpXXX-revYYY`
@@ -23,6 +18,10 @@ Tagging convention is: `cpXXX-revYYY`
 * Support for Docker Secrets via env variables with `_FILE` suffix
 
 Note: Even with basic hardening done, it's highly recommended to not to expose a container directly to the outside world. Consider using a reverse proxy like [traefik](https://doc.traefik.io/traefik/) or [Nginx Proxy Manager](https://nginxproxymanager.com/).
+
+### Current
+
+https://hub.docker.com/r/marverix/classicpress/tags
 
 ## Usage
 
