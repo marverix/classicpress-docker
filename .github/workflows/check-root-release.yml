@@ -1,0 +1,61 @@
+name: Check root package release
+
+on:
+  workflow_dispatch:
+  schedule:
+  - cron: '*/5 * * * *'  # every day at midnight
+
+jobs:
+  check_release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check this repo release
+      id: this_repo
+      uses: pozetroninc/github-action-get-latest-release@v0.5.0
+      with:
+        owner: marverix
+        repo: classicpress-docker
+        excludes: prerelease, draft
+
+    - name: Extract version from this_repo tag
+      id: this_repo_grep
+      run: |
+        output=$(echo "${{ steps.this_repo.outputs.release }}" | egrep -o "[0-9]+\.[0-9]+\.[0-9]+")
+        echo "::set-output name=output::${output}"
+
+    - name: Check root repo release
+      id: root_repo
+      uses: pozetroninc/github-action-get-latest-release@v0.5.0
+      with:
+        owner: ClassicPress
+        repo: ClassicPress-release
+        excludes: prerelease, draft
+
+    - name: Print output
+      run: |
+        echo "This repo release: ${{ steps.this_repo.outputs.release }}"
+        echo "This repo grep output: ${{ steps.this_repo_grep.outputs.output }}"
+        echo "Root repo release: ${{ steps.root_repo.outputs.release }}"
+
+    outputs:
+      this_repo_version: ${{ steps.this_repo_grep.outputs.output }}
+      root_repo_version: ${{ steps.root_repo.outputs.release }}
+
+  releae_new_version:
+    needs: check_release
+    if: ${{ needs.check_release.outputs.this_repo_version != needs.check_release.outputs.root_repo_version }}
+    
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Info
+      run: echo "Releasing ${{ needs.check_release.outputs.root_repo_version }}"
+
+    - name: Release
+      # https://github.com/softprops/action-gh-release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: "cp${ needs.check_release.outputs.root_repo_version }}-rev1"

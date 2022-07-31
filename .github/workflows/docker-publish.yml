@@ -1,4 +1,4 @@
-name: Docker
+name: Docker Publish
 
 on:
   push:
@@ -24,6 +24,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+
+      - name: Get the version
+        id: get_version
+        run: |
+          tag=${GITHUB_REF/refs\/tags\//}
+          version=$(echo "${tag}" | egrep -o "[0-9]+\.[0-9]+\.[0-9]+")
+          echo "::set-output name=value::${version}"
 
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
@@ -67,6 +74,7 @@ jobs:
         id: build-and-push
         uses: docker/build-push-action@v2.10.0
         with:
+          build-args: [ "version=${{ steps.get_version.outputs.value }}" ]
           context: ${{ env.BUILD_CONTEXT }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
