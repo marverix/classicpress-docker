@@ -1,8 +1,8 @@
-FROM php:7.4-apache-bullseye
+FROM php:8.1-apache-bullseye
 
 # Version of ClassicPress
-ARG version
-ARG corerules_version=3.3.2
+ARG version=1.5.2
+ARG corerules_version=3.3.4
 ARG www_dir=/var/www/html
 
 ENV WWW_DIR=${www_dir}
@@ -17,9 +17,14 @@ ENV APACHE_RUN_GROUP=www-data
 # Install packages
 RUN apt-get update \
  && apt-get install -y \
-    locales wget \
-    libapache2-mod-security2 \
-    zlib1g-dev libpng16-16 libpng-dev libzip4 libzip-dev
+    apt-transport-https lsb-release ca-certificates wget gnupg2 \
+ && wget -qO - https://modsecurity.digitalwave.hu/archive.key | apt-key add - \
+ && sh -c 'echo "deb http://modsecurity.digitalwave.hu/debian/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/dwmodsec.list' \
+ && sh -c 'echo "deb http://modsecurity.digitalwave.hu/debian/ $(lsb_release -sc)-backports main" >> /etc/apt/sources.list.d/dwmodsec.list' \
+ && apt-get update \
+ && apt-get install -y \
+    libapache2-mod-security2 libmodsecurity3 \
+    zlib1g-dev libpng16-16 libpng-dev libzip4 libzip-dev locales
 
 # Ensure UTF-8
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen \
