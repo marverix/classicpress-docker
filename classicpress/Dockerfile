@@ -1,7 +1,7 @@
 FROM php:8.1-apache-bullseye
 
 # Version of ClassicPress
-ARG version=1.5.2
+ARG version=1.5.3
 ARG corerules_version=3.3.4
 ARG www_dir=/var/www/html
 
