@@ -38,13 +38,14 @@ services:
     restart: unless-stopped
 
   mariadb:
-    image: mariadb:10.7.3
+    image: mariadb:10.9.7
     container_name: mariadb
     volumes:
     - mariadb_data:/var/lib/mysql
     networks:
     - myblog_network
     environment:
+    - "MARIADB_AUTO_UPGRADE=1"
     - "MARIADB_DATABASE=${MYBLOG}_db"
     - "MARIADB_USER=${MYBLOG}_user"
     - "MARIADB_PASSWORD_FILE=/run/secrets/MYBLOG_DB_PASSWORD"
