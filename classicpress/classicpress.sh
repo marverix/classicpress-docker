@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+schgrp -R press /data
+
 # ClassicPress Startup Script
 TMP_WP_CONFIG=/tmp/wp-config.php
 
@@ -33,7 +35,6 @@ function store_env() {
   sed -i "s/$1/${!1}/g" "${TMP_WP_CONFIG}"
 }
 
-
 # Checking wp-config.php
 if [ ! -f "${WP_CONFIG}" ]; then
     echo "Notice: File ${WP_CONFIG} not found - touching"
@@ -41,8 +42,8 @@ if [ ! -f "${WP_CONFIG}" ]; then
 fi
 
 if [ ! -w "${WP_CONFIG}" ]; then
-    echo "Error: File ${WP_CONFIG} found, but not writable. Have you mounted the /data as a volume?"
-    exit 1
+    echo "Notice: File ${WP_CONFIG} found, but not writable. Fixing"
+    schmod g+w "${WP_CONFIG}"
 fi
 
 if [ -s "${WP_CONFIG}" ]; then
@@ -71,7 +72,7 @@ else
   random_env "CP_NONCE_SALT"
 
   echo "Preparing wp-config.php ..."
-  cp "${WWW_DIR}/../wp-config.template.php" "${TMP_WP_CONFIG}"
+  cp "${PRESS_HOME}/wp-config.template.php" "${TMP_WP_CONFIG}"
   store_env "CP_DB_NAME"
   store_env "CP_DB_USER"
   store_env "CP_DB_PASSWORD"
@@ -99,14 +100,7 @@ else
   cp -r "${BACKUP_WP_CONTENT}" "${WP_CONTENT}"
 fi
 
+schmod -R g+w "${WP_CONTENT}"
 
-# Chanigin ownership
-echo "Changing ownership..."
-sed -Ei "s/$APACHE_RUN_USER:x:[0-9]+:[0-9]+/$APACHE_RUN_USER:x:$APACHE_RUN_USER_ID:$APACHE_RUN_GROUP_ID/g" /etc/passwd
-chown -R ${APACHE_RUN_USER}:${APACHE_RUN_GROUP} ${WWW_DIR} ${DATA_DIR}
-
-
-# Starting apache
-echo "Starting Apache in foreground ..."
-# https://github.com/docker-library/php/blob/master/7.4/bullseye/apache/apache2-foreground
-apache2-foreground
+# Starting
+supervisord
