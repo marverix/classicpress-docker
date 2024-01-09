@@ -1,8 +1,11 @@
-FROM php:8.1-apache-bullseye
+FROM alpine:3.16
+
+LABEL Maintainer="Marek Sierociński"
+LABEL Description="ClassicPress image based on trafex/php-nginx"
 
 # Version of ClassicPress
-ARG version=1.5.3
-ARG corerules_version=3.3.4
+ARG version=1.7.1
+# ARG corerules_version=3.3.4
 ARG www_dir=/var/www/html
 
 ARG WORKDIR_BUILD=/tmp/build
@@ -13,45 +16,59 @@ ENV WWW_DIR=${www_dir}
 ENV DATA_DIR=/data
 ENV WP_CONFIG=${DATA_DIR}/wp-config.php
 ENV WP_CONTENT=${DATA_DIR}/wp-content
-ENV BACKUP_WP_CONTENT="${WWW_DIR}/../wp-content-backup"
+ENV PRESS_USER=press
+ENV PRESS_HOME=/home/${PRESS_USER}
+ENV BACKUP_WP_CONTENT="${PRESS_HOME}/wp-content-backup"
 
-ENV APACHE_RUN_USER=apache
-ENV APACHE_RUN_GROUP=www-data
+WORKDIR /var/www/html
 
-ENV LC_ALL=en_US.UTF-8
-ENV LANG=en_US.UTF-8
-ENV LANGUAGE=en_US.UTF-8
+# Update packages index
+RUN apk update \
+ # Install packages
+ && apk add --no-cache \
+  bash \
+  curl \
+  nginx \
+  php8 \
+  php8-ctype \
+  php8-curl \
+  php8-dom \
+  php8-fpm \
+  php8-gd \
+  php8-intl \
+  php8-mbstring \
+  php8-mysqli \
+  php8-opcache \
+  php8-openssl \
+  php8-phar \
+  php8-session \
+  php8-xml \
+  php8-xmlreader \
+  php8-zlib \
+  supervisor
 
 COPY ./ ${WORKDIR_FILES}/
 
-# Install packages
-RUN apt-get update \
- && apt-get install -y \
-    apt-transport-https lsb-release ca-certificates wget gnupg2 \
- && wget -qO - https://modsecurity.digitalwave.hu/archive.key | apt-key add - \
- && sh -c 'echo "deb http://modsecurity.digitalwave.hu/debian/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/dwmodsec.list' \
- && sh -c 'echo "deb http://modsecurity.digitalwave.hu/debian/ $(lsb_release -sc)-backports main" >> /etc/apt/sources.list.d/dwmodsec.list' \
- && apt-get update \
- && apt-get install -y \
-    libapache2-mod-security2 libmodsecurity3 \
-    zlib1g-dev libpng16-16 libpng-dev libzip4 libzip-dev locales \
-# Ensure UTF-8
- && sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen \
- && locale-gen \
-# Change working directory
- && mkdir -p ${WORKDIR_DOWNLOADS} \
- && cd ${WORKDIR_DOWNLOADS} \
-# Download ClassicPress
+# Prepare users
+RUN adduser -D -u 2048 press \
+ && addgroup press press \
+ && addgroup press nginx
+
+# Configure services
+RUN cp ${WORKDIR_FILES}/conf/php.ini /etc/php8/conf.d/custom.ini \
+ && cp ${WORKDIR_FILES}/conf/fpm-pool.conf /etc/php8/php-fpm.d/www.conf \
+ && cp ${WORKDIR_FILES}/conf/nginx.conf /etc/nginx/nginx.conf \
+ && cp ${WORKDIR_FILES}/conf/supervisord.conf /etc/supervisord.conf \
+&& rm -rf ${www_dir}/*
+
+# Install ClassicPress
+RUN mkdir -p ${WORKDIR_DOWNLOADS} && cd ${WORKDIR_DOWNLOADS} \
  && wget -qO classicpress.tar.gz https://github.com/ClassicPress/ClassicPress-release/archive/refs/tags/${version}.tar.gz \
-# Download corerules
- && wget -qO corerules.tar.gz https://github.com/coreruleset/coreruleset/archive/refs/tags/v${corerules_version}.tar.gz \
-# Clean www_dir
- && rm -rf ${www_dir}/* \
-# Unpack ClassicPress to www_dir
- && tar -xf classicpress.tar.gz -C ${www_dir} --strip-components=1 \
+ && tar -xf classicpress.tar.gz -C ${www_dir} --strip-components=1
+
+# Setup
 # Create /data
- && mkdir ${DATA_DIR} \
- && cd ${DATA_DIR} \
+RUN mkdir ${DATA_DIR} && cd ${DATA_DIR} \
 # Move wp-content to /data
  && mv ${www_dir}/wp-content ${WP_CONTENT} \
  && ln -s ${WP_CONTENT} ${www_dir}/wp-content \
@@ -60,53 +77,24 @@ RUN apt-get update \
  && touch ${WP_CONFIG} \
  && ln -s ${WP_CONFIG} ${www_dir}/wp-config.php \
 # Copy wp-config.template.php
- && cp ${WORKDIR_FILES}/wp-config.template.php ${www_dir}/../wp-config.template.php \
-# Copy php.ini
- && cp ${WORKDIR_FILES}/php.ini "${PHP_INI_DIR}/php.ini" \
-# Install missing php extensions
- && EXTRA_CFLAGS="-I/usr/src/php" docker-php-ext-install \
-    exif gd mysqli zip \
-# Enable apache mod-rewrite
- && a2enmod rewrite \
-# Enable apache mod-headers
- && a2enmod headers \
-# Enable mod-security2
- && a2enmod security2 \
- && cp /etc/modsecurity/modsecurity.conf-recommended /etc/modsecurity/modsecurity.conf \
- && sed -Ei "s/Sec([A-Z][a-z]+)Engine .+/Sec\1Engine On/g" /etc/modsecurity/modsecurity.conf \
- && cp ${WORKDIR_FILES}/security2.conf /etc/apache2/mods-available/security2.conf \
-# Setup mod-security2
- && cd /usr/share/modsecurity-crs \
- && rm -rf ./* \
- && tar -xf ${WORKDIR_DOWNLOADS}/corerules.tar.gz -C ./ --strip-components=1 \
- && mv crs-setup.conf.example crs-setup.conf \
- && mv ./rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf.example ./rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf \
-# Copy default site conf
- && cp ${WORKDIR_FILES}/000-default.conf /etc/apache2/sites-available/000-default.conf \
-# Copy security conf
- && cp ${WORKDIR_FILES}/security.conf /etc/apache2/conf-available/security.conf \
-# Copy htaccess
- && cp ${WORKDIR_FILES}/htaccess ${DATA_DIR}/.htaccess \
- && ln -s ${DATA_DIR}/.htaccess ${www_dir}/.htaccess \
+ && cp ${WORKDIR_FILES}/wp-config.template.php ${PRESS_HOME}/wp-config.template.php \
 # Copy startup script
- && cp ${WORKDIR_FILES}/classicpress.sh /opt/classicpress.sh \
-# Create user
- && useradd -rMUG daemon,www-data apache \
+ && cp ${WORKDIR_FILES}/classicpress.sh ${PRESS_HOME}/classicpress.sh \
+# Privilages
+ && cp ${WORKDIR_FILES}/ch/chmod /bin/schmod \
+ && cp ${WORKDIR_FILES}/ch/chgrp /bin/schgrp \
+ && chmod +s /bin/schmod /bin/schgrp \
+ && chmod +x ${PRESS_HOME}/classicpress.sh \
+ && chown -R ${PRESS_USER}:${PRESS_USER} /data ${www_dir} \
+ && chmod -R 777 /run /var/log \
 # Clean
- && apt-get purge -y --auto-remove \
-    wget zlib1g-dev \
- && apt-get autoclean \
- && rm -r /var/lib/apt/lists/* \
  && rm -rf /tmp/*
 
-# Set back www_dir as workdir
-WORKDIR ${www_dir}
+USER press
 
-# Expose port 80
 EXPOSE 80
 
-# It's important to NOT change user with USER. We want to have root permissions
-# in startup script, so we can dynamcally change UID/GID and ownership.
+HEALTHCHECK --timeout=10s CMD curl --silent --fail http://127.0.0.1/fpm-ping
 
 # Set startup command
-CMD [ "/opt/classicpress.sh" ]
+CMD [ "/home/press/classicpress.sh" ]

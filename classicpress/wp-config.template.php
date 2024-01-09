@@ -18,6 +18,7 @@ define('NONCE_SALT', 'CP_NONCE_SALT');
 $table_prefix  = 'CP_DB_TABLE_PREFIX';
 
 define('WP_DEBUG', false);
+define('WP_AUTO_UPDATE_CORE', false); // Lock CP version
 
 if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) {
 	$_SERVER['HTTPS'] = 'on';

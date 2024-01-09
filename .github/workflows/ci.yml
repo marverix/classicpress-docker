@@ -1,8 +1,8 @@
-name: Docker Publish
+name: CI
 
 on:
   push:
-    tags: [ 'cp*.*.*-rev*' ]
+    tags: [ '*.*.*-r*' ]
   pull_request:
     branches: [ master ]
 
@@ -62,11 +62,11 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=match,pattern=cp(\d+\.\d+),group=1
-            type=match,pattern=cp\d+\.\d+
-            type=match,pattern=cp([^-]+),group=1
-            type=match,pattern=cp[^-]+
-            type=match,pattern=cp.+
+            type=match,pattern=(\d+\.\d+),group=1
+            type=match,pattern=\d+\.\d+
+            type=match,pattern=([^-]+),group=1
+            type=match,pattern=[^-]+
+            type=match,pattern=.+
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action

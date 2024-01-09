@@ -4,17 +4,25 @@ Quote from [www.classicpress.net](https://www.classicpress.net/):
 
 > ClassicPress is a community-led open source content management system and a fork of WordPress that preserves the TinyMCE classic editor as the default option.
 
+## Changelog
+
+[Open changelog](https://github.com/marverix/classicpress-docker/blob/master/CHANGELOG.md)
+
 ## Tags
+
 ### Convention
 
-Tagging convention is: `cpXXX-revYYY`
+Tagging convention is: `CLASIC_PRESS_VERSION-rRELEASE`
 
-`XXX` is ClassicPress version. `YYY` is Docker Image revision number.
+`CLASIC_PRESS_VERSION` is ClassicPress version, `RELEASE` is Docker Image release number. Eg. `1.7.1-r1`.
+
 ## Basic Information
 
-* The image is based on [`php:7.4-apache-bullseye`](https://hub.docker.com/_/php?tab=tags&name=7.4-apache-bullseye)
+* The image is based on Alpine 3.16 and php 8.0 (3.16 is a bit old, but it's last version having php8.0 which is required by ClassicPress 1.x)
+* Some code taken from [`TrafeX/docker-php-nginx:2.5.0`](https://github.com/TrafeX/docker-php-nginx) which I highly recommend! Unfortunatelly I coudln't use it (inherit) because Docker has no mechanism to "unexpose" port and remove health check
+* Thanks to Alpine + Nginx + php-fpm, the image is using only around ~40MB of RAM
 * Has enabled all required and recommended php extensions for WordPress
-* Has installed [`apache2-mod-security2`](https://github.com/SpiderLabs/ModSecurity) with [enabled OWASP CSR](https://owasp.org/www-project-modsecurity-core-rule-set/)
+* Basic security hardening done
 * Support for Docker Secrets via env variables with `_FILE` suffix
 
 Note: Even with basic hardening done, it's highly recommended to not to expose a container directly to the outside world. Consider using a reverse proxy like [traefik](https://doc.traefik.io/traefik/) or [Nginx Proxy Manager](https://nginxproxymanager.com/).
@@ -28,35 +36,22 @@ https://hub.docker.com/r/marverix/classicpress/tags
 Good Docker practice is that one service/server == one docker container, this is why you will still need to run separate container
 with a database (MySQL/MariaDB).
 
-### Privilages
+### Write Permission
 
-Apache server inside is using two environment variables to set privilages:
+This image deals with write access shared between host and the container by group `press` (and user) with ID _2048_. This is why your user running the container must be in this group.
 
-* `APACHE_RUN_USER_ID`
-* `APACHE_RUN_GROUP_ID`
+If you are running Debian/Ubuntu-based run on your host machine:
 
-By default Docker runs everything with _root_ privilages. There are many great articles describing the impications of this solution, like:
+```sh
+sudo groupadd -g 2048 press
+sudo usermod $(whoami) -aG press
+```
+
+Read more:
 
 * [File Permissions: the painful side of Docker](https://blog.gougousis.net/file-permissions-the-painful-side-of-docker/)
 * [Permission problems in bind mount in Docker Volume](https://techflare.blog/permission-problems-in-bind-mount-in-docker-volume/)
 * [File permissions on Docker volumes](https://ikriv.com/blog/?p=4698)
-
-This is why this image is running the Apache server as `apache:apache`.
-The trick here is, that Apache's user ID (`APACHE_RUN_USER_ID`) and group ID (`APACHE_RUN_GROUP_ID`) are set on fly, to user ID and group ID of the docker container runner. Only downside of this solution is that
-you need to set `UID` and `GID` env variables (for example in `~/.bashrc`) like this:
-
-```sh
-export UID=$(id -u)
-export GID=$(id -g)
-```
-
-With this, you can use it in Docker Compose like this:
-
-```yaml
-    environment:
-    - "APACHE_RUN_USER_ID=${UID}"
-    - "APACHE_RUN_GROUP_ID=${GID}"
-```
 
 ### With Docker Compose
 
@@ -105,8 +100,6 @@ docker-compose -f docker-compose.example.yaml --env-file=myblog-env-example up
         --expose 80:80 \
         --name myblog \
         --volume myblog_data:/data \
-        --env APACHE_RUN_USER_ID=$UID \
-        --env APACHE_RUN_GROUP_ID=$GID \
         --env CP_DB_NAME=myblog_db \
         --env CP_DB_USER=myblog_user \
         --env CP_DB_PASSWORD=my_secret_passowrd \
