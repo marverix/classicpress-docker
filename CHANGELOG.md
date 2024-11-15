@@ -1,10 +1,16 @@
 # Changelog
 
-## 1.7.3-rc1
+## 2.2.0-r1
+
+* Updated to ClassicPress 2.2.0
+* Alpine updated to 3.20
+* PHP updated to 8.2
+
+## 1.7.3-r1
 
 * Updated to ClassicPress 1.7.3
 
-## 1.7.1-rc1
+## 1.7.1-r1
 
 * **BREAKING CHANGES**:
 
