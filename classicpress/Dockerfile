@@ -4,7 +4,7 @@ LABEL Maintainer="Marek Sierociński"
 LABEL Description="ClassicPress image based on trafex/php-nginx"
 
 # Version of ClassicPress
-ARG version=1.7.1
+ARG version=1.7.3
 # ARG corerules_version=3.3.4
 ARG www_dir=/var/www/html
 

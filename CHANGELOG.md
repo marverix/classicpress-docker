@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.3-rc1
+
+* Updated to ClassicPress 1.7.3
+
 ## 1.7.1-rc1
 
 * **BREAKING CHANGES**:
