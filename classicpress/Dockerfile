@@ -1,10 +1,10 @@
-FROM alpine:3.16
+FROM alpine:3.20
 
 LABEL Maintainer="Marek Sierociński"
 LABEL Description="ClassicPress image based on trafex/php-nginx"
 
 # Version of ClassicPress
-ARG version=1.7.3
+ARG version=2.2.0
 # ARG corerules_version=3.3.4
 ARG www_dir=/var/www/html
 
@@ -29,22 +29,22 @@ RUN apk update \
   bash \
   curl \
   nginx \
-  php8 \
-  php8-ctype \
-  php8-curl \
-  php8-dom \
-  php8-fpm \
-  php8-gd \
-  php8-intl \
-  php8-mbstring \
-  php8-mysqli \
-  php8-opcache \
-  php8-openssl \
-  php8-phar \
-  php8-session \
-  php8-xml \
-  php8-xmlreader \
-  php8-zlib \
+  php82 \
+  php82-ctype \
+  php82-curl \
+  php82-dom \
+  php82-fpm \
+  php82-gd \
+  php82-intl \
+  php82-mbstring \
+  php82-mysqli \
+  php82-opcache \
+  php82-openssl \
+  php82-phar \
+  php82-session \
+  php82-xml \
+  php82-xmlreader \
+  php82-zlib \
   supervisor
 
 COPY ./ ${WORKDIR_FILES}/
@@ -55,8 +55,8 @@ RUN adduser -D -u 2048 press \
  && addgroup press nginx
 
 # Configure services
-RUN cp ${WORKDIR_FILES}/conf/php.ini /etc/php8/conf.d/custom.ini \
- && cp ${WORKDIR_FILES}/conf/fpm-pool.conf /etc/php8/php-fpm.d/www.conf \
+RUN cp ${WORKDIR_FILES}/conf/php.ini /etc/php82/conf.d/custom.ini \
+ && cp ${WORKDIR_FILES}/conf/fpm-pool.conf /etc/php82/php-fpm.d/www.conf \
  && cp ${WORKDIR_FILES}/conf/nginx.conf /etc/nginx/nginx.conf \
  && cp ${WORKDIR_FILES}/conf/supervisord.conf /etc/supervisord.conf \
 && rm -rf ${www_dir}/*
