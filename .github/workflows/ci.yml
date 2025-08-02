@@ -69,11 +69,11 @@ jobs:
         working-directory: test
         run: |
           docker compose \
-            --file=run-tests.yaml \
-            --progress=quiet \
+            --file run-tests.yaml \
+            --progress quiet \
             up \
-            --abort-on-container-exit=k6 \
-            --exit-code-from=k6
+            --abort-on-container-exit k6 \
+            --exit-code-from k6
 
       - if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
         name: Push
