@@ -93,3 +93,23 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           repository: ${{ env.IMAGE_NAME }}
           short-description: ClassicPress Docker Image
+
+      - if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+        name: Create Changelog
+        id: changelog
+        uses: requarks/changelog-action@v1
+        with:
+          token: ${{ github.token }}
+          tag: ${{ github.ref_name }}
+          writeToFile: false
+          excludeTypes: build,docs,style
+          excludeScopes: deploy,version
+          includeInvalidCommits: true
+
+      - if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+        name: Release
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ github.token }}
+          tag: ${{ steps.version.outputs.value }}
+          body: ${{ steps.changelog.outputs.changes }}
