@@ -109,8 +109,8 @@ jobs:
         uses: requarks/changelog-action@v1
         with:
           token: ${{ github.token }}
-          fromTag: ${{ steps.previous-tag.outputs.value }}
-          toTag: ${{ github.ref_name }}
+          fromTag: ${{ github.ref_name }}
+          toTag: ${{ steps.previous-tag.outputs.value }}
           writeToFile: false
           excludeTypes: build,docs,style
           excludeScopes: deploy,version
