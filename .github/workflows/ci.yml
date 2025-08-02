@@ -9,7 +9,7 @@ env:
   IMAGE_NAME: marverix/classicpress
 
 jobs:
-  build:
+  ci:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -68,7 +68,7 @@ jobs:
       - name: Test
         working-directory: test
         run: |
-          docker-compose -f run-tests.yaml up \
+          docker compose -f run-tests.yaml up \
             --abort-on-container-exit k6 \
             --exit-code-from k6
 
