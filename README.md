@@ -14,11 +14,11 @@ Quote from [www.classicpress.net](https://www.classicpress.net/):
 
 Tagging convention is: `CLASIC_PRESS_VERSION-rRELEASE`
 
-`CLASIC_PRESS_VERSION` is ClassicPress version, `RELEASE` is Docker Image release number. Eg. `1.7.1-r1`.
+`CLASIC_PRESS_VERSION` is ClassicPress version, `RELEASE` is Docker Image release number. Eg. `2.4.1-r1`.
 
 ## Basic Information
 
-* The image is based on Alpine 3.16 and php 8.0 (3.16 is a bit old, but it's last version having php8.0 which is required by ClassicPress 1.x)
+* The image is based on Alpine 3.22 and php 8.4
 * Some code taken from [`TrafeX/docker-php-nginx:2.5.0`](https://github.com/TrafeX/docker-php-nginx) which I highly recommend! Unfortunatelly I coudln't use it (inherit) because Docker has no mechanism to "unexpose" port and remove health check
 * Thanks to Alpine + Nginx + php-fpm, the image is using only around ~40MB of RAM
 * Has enabled all required and recommended php extensions for WordPress

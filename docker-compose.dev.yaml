@@ -1,14 +1,12 @@
-version: "3"
-
 networks: 
   classicpress_network:
     driver: bridge
 
 secrets:
   CP_DB_PASSWORD:
-    file: ./secrets/CP_DB_PASSWORD.secret
+    file: ./test/CP_DB_PASSWORD
   DB_ROOT_PASSWORD:
-    file: ./secrets/DB_ROOT_PASSWORD.secret
+    file: ./test/DB_ROOT_PASSWORD
 
 services:
   classicpress:
@@ -32,7 +30,7 @@ services:
 
   mariadb:
     image: mariadb:10.7.3
-    container_name: "${CP_DB_HOST}"
+    container_name: mariadb
     volumes:
     - ./data/mariadb:/var/lib/mysql
     networks:
