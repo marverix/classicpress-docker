@@ -95,12 +95,22 @@ jobs:
           short-description: ClassicPress Docker Image
 
       - if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+        name: Get previous release tag
+        id: previous-tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag_name=$(gh release ls -L 1 --json tagName | jq -r '.[0].tagName')
+          echo "value=${tag_name}" >> $GITHUB_OUTPUT
+
+      - if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
         name: Create Changelog
         id: changelog
         uses: requarks/changelog-action@v1
         with:
           token: ${{ github.token }}
-          tag: ${{ github.ref_name }}
+          fromTag: ${{ steps.previous-tag.outputs.value }}
+          toTag: ${{ github.ref_name }}
           writeToFile: false
           excludeTypes: build,docs,style
           excludeScopes: deploy,version
