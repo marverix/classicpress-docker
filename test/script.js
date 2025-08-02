@@ -13,7 +13,7 @@ export default function () {
   check(res, {
     'page is accessible': (r) => r.status === 200,
     'installation page is visible': (r) => {
-      return /<title>ClassicPress.*Installation2<\/title>/.test(r.body);
+      return /<title>ClassicPress.*Installation<\/title>/.test(r.body);
     },
   });
 }
