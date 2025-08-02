@@ -12,9 +12,7 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      packages: write
-      id-token: write
+      contents: write
 
     steps:
       - name: Checkout repository
