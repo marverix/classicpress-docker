@@ -1,5 +1,3 @@
-version: "3"
-
 networks: 
   myblog_network:
     driver: bridge

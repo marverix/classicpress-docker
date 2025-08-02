@@ -1,0 +1,57 @@
+networks: 
+  classicpress_network:
+    driver: bridge
+
+secrets:
+  CP_DB_PASSWORD:
+    file: ./CP_DB_PASSWORD
+  DB_ROOT_PASSWORD:
+    file: ./DB_ROOT_PASSWORD
+
+services:
+  k6:
+    image: grafana/k6:latest
+    networks:
+    - classicpress_network
+    depends_on:
+      classicpress:
+        condition: service_healthy
+    volumes:
+    - ./script.js:/home/k6/script.js
+    command: run script.js
+
+  classicpress:
+    image: marverix/classicpress
+    networks:
+    - classicpress_network
+    depends_on:
+    - mariadb
+    environment:
+      CP_DB_HOST: mariadb
+      CP_DB_NAME: classicpress
+      CP_DB_USER: tester
+      CP_DB_PASSWORD_FILE: /run/secrets/CP_DB_PASSWORD
+    secrets:
+    - CP_DB_PASSWORD
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mariadb:
+    image: mariadb:10.7.3
+    networks:
+    - classicpress_network
+    environment:
+      MARIADB_DATABASE: classicpress
+      MARIADB_USER: tester
+      MARIADB_PASSWORD_FILE: /run/secrets/MARIADB_PASSWORD
+      MARIADB_ROOT_PASSWORD_FILE: /run/secrets/MARIADB_ROOT_PASSWORD
+    secrets:
+    - source: CP_DB_PASSWORD
+      target: MARIADB_PASSWORD
+    - source: DB_ROOT_PASSWORD
+      target: MARIADB_ROOT_PASSWORD
+    restart: unless-stopped

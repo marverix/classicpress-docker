@@ -2,19 +2,14 @@ name: CI
 
 on:
   push:
-    tags: [ '*.*.*-r*' ]
   pull_request:
     branches: [ master ]
 
 env:
-  REGISTRY: registry.hub.docker.com
   IMAGE_NAME: marverix/classicpress
-  BUILD_CONTEXT: ./classicpress
-
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -23,79 +18,72 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      - name: Get the version
-        id: get_version
+      - name: Get ClassicPress version
+        id: version
+        working-directory: classicpress
         run: |
-          tag=${GITHUB_REF/refs\/tags\//}
-          version=$(echo "${tag}" | egrep -o "[0-9]+\.[0-9]+\.[0-9]+")
-          echo "::set-output name=value::${version}"
+          version=$(grep -oP 'ARG version=\K[0-9.]+(?=)' Dockerfile | xargs)
+          echo "value=${version}" >> $GITHUB_OUTPUT
 
-      # Install the cosign tool except on PR
-      # https://github.com/sigstore/cosign-installer
-      # - name: Install cosign
-      #   if: github.event_name != 'pull_request'
-      #   uses: sigstore/cosign-installer@main
-      #   with:
-      #     cosign-release: 'v2.0.1'
-
-      # Workaround: https://github.com/docker/build-push-action/issues/461
       - name: Setup Docker buildx
-        uses: docker/setup-buildx-action@v1.6.0
-
-      # Login against a Docker registry except on PR
-      # https://github.com/docker/login-action
-      - name: Log into registry ${{ env.REGISTRY }}
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@v2
+        uses: docker/setup-buildx-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          platforms: linux/amd64,linux/arm64
+
+      - if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+        name: Log into registry
+        uses: docker/login-action@v3
+        with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_PTA }}
 
-      # Extract metadata (tags, labels) for Docker
-      # https://github.com/docker/metadata-action
-      - name: Extract Docker metadata
+      - name: Set Docker metadata
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.IMAGE_NAME }}
           tags: |
-            type=match,pattern=(\d+\.\d+),group=1
-            type=match,pattern=\d+\.\d+
-            type=match,pattern=([^-]+),group=1
-            type=match,pattern=[^-]+
-            type=match,pattern=.+
+            type=raw,value=${{ steps.version.outputs.value }}
+            type=raw,value={{date 'YYYYMMDD-hhmmss' tz='Europe/Warsaw'}}
+            type=raw,value=latest,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=ClassicPress
+            org.opencontainers.image.version=${{ steps.version.outputs.value }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.repository }}
+            org.opencontainers.image.created={{date 'YYYY-MM-DDTHH:mm:ss.SSS[Z]'}}
 
-      # Build and push Docker image with Buildx (don't push on PR)
-      # https://github.com/docker/build-push-action
-      - name: Build and push Docker image
-        id: build-and-push
+      - name: Build
         uses: docker/build-push-action@v4
         with:
-          build-args: |
-            version=${{ steps.get_version.outputs.value }}
-          context: ${{ env.BUILD_CONTEXT }}
-          push: ${{ github.event_name != 'pull_request' }}
+          context: ./classicpress
+          push: false
+          load: true
+          platforms: linux/amd64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      # Sign the resulting Docker image digest except on PRs.
-      # This will only write to the public Rekor transparency log when the Docker
-      # repository is public to avoid leaking data.  If you would like to publish
-      # transparency data even for private images, pass --force to cosign below.
-      # https://github.com/sigstore/cosign
-      # - name: Sign the published Docker image
-      #   if: ${{ github.event_name != 'pull_request' }}
-      #   env:
-      #     COSIGN_EXPERIMENTAL: "true"
-      #   # This step uses the identity token to provision an ephemeral certificate
-      #   # against the sigstore community Fulcio instance.
-      #   run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build-and-push.outputs.digest }}
+      - name: Test
+        working-directory: test
+        run: |
+          docker-compose -f run-tests.yaml up \
+            --abort-on-container-exit k6 \
+            --exit-code-from k6
 
-      - name: Update Docker Hub description
-        if: ${{ github.event_name != 'pull_request' }}
+      - if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+        name: Push
+        uses: docker/build-push-action@v4
+        with:
+          context: ./classicpress
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+        name: Update Docker Hub description
         uses: peter-evans/dockerhub-description@v2
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
