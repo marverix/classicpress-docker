@@ -19,6 +19,7 @@ Tagging convention is: `CLASIC_PRESS_VERSION-rRELEASE`
 ## Basic Information
 
 * The image is based on Alpine 3.22 and php 8.4
+* Multi-plarform support: AMD64 (x86-64) and ARM64 (aarch64)
 * Some code taken from [`TrafeX/docker-php-nginx:2.5.0`](https://github.com/TrafeX/docker-php-nginx) which I highly recommend! Unfortunatelly I coudln't use it (inherit) because Docker has no mechanism to "unexpose" port and remove health check
 * Thanks to Alpine + Nginx + php-fpm, the image is using only around ~40MB of RAM
 * Has enabled all required and recommended php extensions for WordPress
